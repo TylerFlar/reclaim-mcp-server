@@ -127,6 +127,9 @@ async def create_task(
     max_chunk_size_minutes: Optional[int] = None,
     snooze_until: Optional[str] = None,
     priority: str = "P2",
+    event_category: str = "WORK",
+    event_sub_type: Optional[str] = None,
+    time_scheme_id: Optional[int] = None,
 ) -> dict:
     """Create a new task in Reclaim.ai for auto-scheduling.
 
@@ -138,11 +141,19 @@ async def create_task(
         max_chunk_size_minutes: Maximum time block size (None = duration)
         snooze_until: Don't schedule before this datetime (ISO format)
         priority: P1 (Critical), P2 (High), P3 (Medium), P4 (Low)
+        event_category: WORK or PERSONAL (default WORK)
+        event_sub_type: Optional Reclaim EventSubType. Examples: FOCUS,
+            PRODUCTIVITY, MEETING, ONE_ON_ONE, ERRAND, HEALTH, OTHER_PERSONAL,
+            TRAVEL, VACATION.
+        time_scheme_id: Optional account-time-scheme ID for scheduling
+            against custom hours (use get_working_hours to list schemes)
 
     Returns:
         Created task object
     """
-    await ctx.info(f"Creating task: '{title}' ({duration_minutes}min, {priority})")
+    await ctx.info(
+        f"Creating task: '{title}' ({duration_minutes}min, {priority}, {event_category})"
+    )
     return await tasks.create_task(
         title=title,
         duration_minutes=duration_minutes,
@@ -151,6 +162,9 @@ async def create_task(
         max_chunk_size_minutes=max_chunk_size_minutes,
         snooze_until=snooze_until,
         priority=priority,
+        event_category=event_category,
+        event_sub_type=event_sub_type,
+        time_scheme_id=time_scheme_id,
     )
 
 
@@ -167,6 +181,9 @@ async def update_task(
     notes: Optional[str] = None,
     min_chunk_size_minutes: Optional[int] = None,
     max_chunk_size_minutes: Optional[int] = None,
+    event_category: Optional[str] = None,
+    event_sub_type: Optional[str] = None,
+    time_scheme_id: Optional[int] = None,
 ) -> dict:
     """Update an existing task in Reclaim.ai.
 
@@ -181,6 +198,11 @@ async def update_task(
         notes: Update task notes (optional)
         min_chunk_size_minutes: Minimum time block size in minutes (optional)
         max_chunk_size_minutes: Maximum time block size in minutes (optional)
+        event_category: WORK or PERSONAL (optional)
+        event_sub_type: Reclaim EventSubType - FOCUS, MEETING, ERRAND, HEALTH,
+            OTHER_PERSONAL, etc. (optional)
+        time_scheme_id: Account-time-scheme ID to schedule against (optional;
+            set to change which custom/working hours the task uses)
 
     Returns:
         Updated task object
@@ -197,6 +219,9 @@ async def update_task(
         notes=notes,
         min_chunk_size_minutes=min_chunk_size_minutes,
         max_chunk_size_minutes=max_chunk_size_minutes,
+        event_category=event_category,
+        event_sub_type=event_sub_type,
+        time_scheme_id=time_scheme_id,
     )
 
 

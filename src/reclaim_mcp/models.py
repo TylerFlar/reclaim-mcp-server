@@ -80,6 +80,34 @@ class TimePolicyType(str, Enum):
     MEETING = "MEETING"
 
 
+class EventCategory(str, Enum):
+    """Event category for Reclaim tasks and habits (WORK or PERSONAL)."""
+
+    WORK = "WORK"
+    PERSONAL = "PERSONAL"
+
+
+class EventSubType(str, Enum):
+    """Event subtype values from the Reclaim.ai API."""
+
+    FOCUS = "FOCUS"
+    PRODUCTIVITY = "PRODUCTIVITY"
+    MEETING = "MEETING"
+    ONE_ON_ONE = "ONE_ON_ONE"
+    STAFF_MEETING = "STAFF_MEETING"
+    OP_REVIEW = "OP_REVIEW"
+    EXTERNAL = "EXTERNAL"
+    IDEATION = "IDEATION"
+    TRAVEL = "TRAVEL"
+    FLIGHT = "FLIGHT"
+    TRAIN = "TRAIN"
+    RECLAIM = "RECLAIM"
+    VACATION = "VACATION"
+    HEALTH = "HEALTH"
+    ERRAND = "ERRAND"
+    OTHER_PERSONAL = "OTHER_PERSONAL"
+
+
 class SnoozeOption(str, Enum):
     """Snooze duration presets for tasks."""
 
@@ -149,6 +177,9 @@ class TaskCreate(BaseModel):
     due_date: Optional[str] = None
     snooze_until: Optional[str] = None
     priority: TaskPriority = TaskPriority.P2
+    event_category: EventCategory = EventCategory.WORK
+    event_sub_type: Optional[EventSubType] = None
+    time_scheme_id: Optional[int] = Field(default=None, gt=0)
 
     @field_validator("title")
     @classmethod
@@ -194,6 +225,9 @@ class TaskUpdate(BaseModel):
     notes: Optional[str] = None
     min_chunk_size_minutes: Optional[int] = Field(default=None)
     max_chunk_size_minutes: Optional[int] = Field(default=None)
+    event_category: Optional[EventCategory] = None
+    event_sub_type: Optional[EventSubType] = None
+    time_scheme_id: Optional[int] = Field(default=None, gt=0)
 
     @field_validator("duration_minutes", "min_chunk_size_minutes", "max_chunk_size_minutes")
     @classmethod

@@ -122,6 +122,9 @@ async def create_task(
     max_chunk_size_minutes: Optional[int] = None,
     snooze_until: Optional[str] = None,
     priority: str = "P2",
+    event_category: str = "WORK",
+    event_sub_type: Optional[str] = None,
+    time_scheme_id: Optional[int] = None,
 ) -> dict:
     """Create a new task in Reclaim.ai for auto-scheduling.
 
@@ -133,6 +136,12 @@ async def create_task(
         max_chunk_size_minutes: Maximum time block size (None = duration)
         snooze_until: Don't schedule before this datetime (ISO format)
         priority: P1 (Critical), P2 (High), P3 (Medium), P4 (Low)
+        event_category: WORK or PERSONAL (default WORK)
+        event_sub_type: Optional Reclaim EventSubType (e.g. FOCUS, MEETING,
+            ERRAND, HEALTH, OTHER_PERSONAL)
+        time_scheme_id: Optional account-time-scheme ID to schedule against
+            (use list_time_schemes / get_working_hours to find IDs for
+            custom hours)
 
     Returns:
         Created task object.
@@ -147,6 +156,9 @@ async def create_task(
             due_date=due_date,
             snooze_until=snooze_until,
             priority=priority,  # type: ignore[arg-type]
+            event_category=event_category,  # type: ignore[arg-type]
+            event_sub_type=event_sub_type,  # type: ignore[arg-type]
+            time_scheme_id=time_scheme_id,
         )
     except ValidationError as e:
         raise ToolError(format_validation_errors(e))
@@ -164,7 +176,7 @@ async def create_task(
             "timeChunksRequired": time_chunks,
             "minChunkSize": validated.min_chunk_size_minutes,
             "maxChunkSize": validated.max_chunk_size_minutes or validated.duration_minutes,
-            "eventCategory": "WORK",
+            "eventCategory": validated.event_category.value,
             "priority": validated.priority.value,
         }
 
@@ -172,6 +184,10 @@ async def create_task(
             payload["deadline"] = validated.due_date
         if validated.snooze_until is not None:
             payload["snoozeUntil"] = validated.snooze_until
+        if validated.event_sub_type is not None:
+            payload["eventSubType"] = validated.event_sub_type.value
+        if validated.time_scheme_id is not None:
+            payload["timeSchemeId"] = validated.time_scheme_id
 
         result = await client.post("/api/tasks", payload)
         invalidate_cache("list_tasks")
@@ -194,6 +210,9 @@ async def update_task(
     notes: Optional[str] = None,
     min_chunk_size_minutes: Optional[int] = None,
     max_chunk_size_minutes: Optional[int] = None,
+    event_category: Optional[str] = None,
+    event_sub_type: Optional[str] = None,
+    time_scheme_id: Optional[int] = None,
 ) -> dict:
     """Update an existing task in Reclaim.ai.
 
@@ -208,6 +227,11 @@ async def update_task(
         notes: Update task notes (optional)
         min_chunk_size_minutes: Minimum time block size in minutes (optional)
         max_chunk_size_minutes: Maximum time block size in minutes (optional)
+        event_category: WORK or PERSONAL (optional)
+        event_sub_type: Reclaim EventSubType - FOCUS, MEETING, ERRAND, HEALTH,
+            OTHER_PERSONAL, etc. (optional)
+        time_scheme_id: Account-time-scheme ID to schedule against (optional;
+            set to change which custom/working hours the task uses)
 
     Returns:
         Updated task object.
@@ -230,6 +254,9 @@ async def update_task(
             notes=notes,
             min_chunk_size_minutes=min_chunk_size_minutes,
             max_chunk_size_minutes=max_chunk_size_minutes,
+            event_category=event_category,  # type: ignore[arg-type]
+            event_sub_type=event_sub_type,  # type: ignore[arg-type]
+            time_scheme_id=time_scheme_id,
         )
     except ValidationError as e:
         raise ToolError(format_validation_errors(e))
@@ -259,6 +286,12 @@ async def update_task(
             update_data["minChunkSize"] = validated.min_chunk_size_minutes
         if validated.max_chunk_size_minutes is not None:
             update_data["maxChunkSize"] = validated.max_chunk_size_minutes
+        if validated.event_category is not None:
+            update_data["eventCategory"] = validated.event_category.value
+        if validated.event_sub_type is not None:
+            update_data["eventSubType"] = validated.event_sub_type.value
+        if validated.time_scheme_id is not None:
+            update_data["timeSchemeId"] = validated.time_scheme_id
 
         result = await client.patch(f"/api/tasks/{validated_id.task_id}", update_data)
         invalidate_cache("list_tasks")
