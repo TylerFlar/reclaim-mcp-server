@@ -124,7 +124,7 @@ async def create_task(
     priority: str = "P2",
     event_category: str = "WORK",
     event_sub_type: Optional[str] = None,
-    time_scheme_id: Optional[int] = None,
+    time_scheme_id: Optional[str] = None,
 ) -> dict:
     """Create a new task in Reclaim.ai for auto-scheduling.
 
@@ -212,7 +212,7 @@ async def update_task(
     max_chunk_size_minutes: Optional[int] = None,
     event_category: Optional[str] = None,
     event_sub_type: Optional[str] = None,
-    time_scheme_id: Optional[int] = None,
+    time_scheme_id: Optional[str] = None,
 ) -> dict:
     """Update an existing task in Reclaim.ai.
 

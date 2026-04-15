@@ -179,7 +179,7 @@ class TaskCreate(BaseModel):
     priority: TaskPriority = TaskPriority.P2
     event_category: EventCategory = EventCategory.WORK
     event_sub_type: Optional[EventSubType] = None
-    time_scheme_id: Optional[int] = Field(default=None, gt=0)
+    time_scheme_id: Optional[str] = None
 
     @field_validator("title")
     @classmethod
@@ -227,7 +227,7 @@ class TaskUpdate(BaseModel):
     max_chunk_size_minutes: Optional[int] = Field(default=None)
     event_category: Optional[EventCategory] = None
     event_sub_type: Optional[EventSubType] = None
-    time_scheme_id: Optional[int] = Field(default=None, gt=0)
+    time_scheme_id: Optional[str] = None
 
     @field_validator("duration_minutes", "min_chunk_size_minutes", "max_chunk_size_minutes")
     @classmethod
