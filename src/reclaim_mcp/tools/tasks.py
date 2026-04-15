@@ -166,16 +166,19 @@ async def create_task(
     try:
         client = _get_client()
 
-        # Convert minutes to time chunks (Reclaim uses 15-min chunks)
-        time_chunks = validated.duration_minutes // 15
-        if time_chunks < 1:
-            time_chunks = 1
+        # Reclaim schedules in 15-min chunks; all three chunk fields are in chunk units.
+        time_chunks = max(1, validated.duration_minutes // 15)
+        min_chunks = max(1, validated.min_chunk_size_minutes // 15)
+        max_chunks = max(
+            min_chunks,
+            (validated.max_chunk_size_minutes or validated.duration_minutes) // 15,
+        )
 
         payload: dict[str, Any] = {
             "title": validated.title,
             "timeChunksRequired": time_chunks,
-            "minChunkSize": validated.min_chunk_size_minutes,
-            "maxChunkSize": validated.max_chunk_size_minutes or validated.duration_minutes,
+            "minChunkSize": min_chunks,
+            "maxChunkSize": max_chunks,
             "eventCategory": validated.event_category.value,
             "priority": validated.priority.value,
         }
@@ -283,9 +286,9 @@ async def update_task(
         if validated.notes is not None:
             update_data["notes"] = validated.notes
         if validated.min_chunk_size_minutes is not None:
-            update_data["minChunkSize"] = validated.min_chunk_size_minutes
+            update_data["minChunkSize"] = max(1, validated.min_chunk_size_minutes // 15)
         if validated.max_chunk_size_minutes is not None:
-            update_data["maxChunkSize"] = validated.max_chunk_size_minutes
+            update_data["maxChunkSize"] = max(1, validated.max_chunk_size_minutes // 15)
         if validated.event_category is not None:
             update_data["eventCategory"] = validated.event_category.value
         if validated.event_sub_type is not None:
